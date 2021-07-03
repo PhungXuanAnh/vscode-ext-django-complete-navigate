@@ -57,43 +57,215 @@ function getCurrentPositionAndLineContent() {
 }
 
 
-function findAllIndexOfDotInString(str: string) {
-	var indices = [];
-	for(var i=0; i<str.length;i++) {
-		if (str[i] === ".") {
-			indices.push(i);
-		}
-	}
-	return indices;
-}
-
-
-function detectObjectInLine(cursorColumn: number, str: string) {
+function getObjectAndItPropertyInCurrentLine(cursorColumn: number, str: string) {
 	let splitStr = str.split(".");
 	let tmpStr = splitStr[0];
-	var object = null;
+	let object = null;
+	let property = null;
 
 	for(var i=0; i<splitStr.length; i++) {
 		if (tmpStr.length > cursorColumn - 1) {
-			console.log("detectObjectInLine: " + object);
-			return object;
+			console.log(`getObjectAndItPropertyInCurrentLine: object.property: ${object}.${property}`);
+			if (property !== null && property.includes('(')) {	// remove () in object.property()
+				property = property.split('(')[0];
+			}
+			return {
+				objectName: object,
+				property: property
+			};;
 		}
 		tmpStr += '.';
 		tmpStr += splitStr[i+1];
+		property = splitStr[i+1];
 		object = splitStr[i];
 	}
-	console.log("detectObjectInLine: Cannot detect object");
+	console.log("getObjectAndItPropertyInCurrentLine: Cannot detect object");
+	return {
+		objectName: null,
+		property: null
+	};
+}
+
+
+function parsePythonFile(fileName: string, tabLength: number) {
+	var lines = require('fs').readFileSync(fileName, 'utf-8')
+		.split('\n');
+		// .filter(Boolean);	// add this code to ignore empty lines
+
+	// console.log(lines);
+	const parsedContent: {[index: string]:any} = {};
+
+	let className = null;
+	for (let i in lines) {
+		// console.log(lines[i].slice(0, 4));
+		// class
+		let line = lines[i];
+		let realLine = Number(i) + 1;
+		if (line.startsWith('class ')) {
+			
+			let classDeclare = line.slice('class '.length, line.length);
+			if (classDeclare.includes('(')) {
+				className = classDeclare.split('(')[0];
+			} else {
+				className = classDeclare.slice(0, classDeclare.length-1);
+			}
+			parsedContent[className] = {
+				line: Number(i) + 1,
+				properties: {}
+			};
+		}
+
+		// attributes or methods
+		if (!(line.startsWith(' '.repeat(tabLength*2)))) {
+			// console.log(line);
+
+			// method
+			if (line.includes('def ') && className !== null) {
+				// console.log(line);
+				let method = line.split('def ')[1].split('(')[0];
+				parsedContent[className].properties[method] = realLine;
+			}
+
+			// attributes
+			if (line.includes(' = ')) {
+				// console.log(line);
+				let attribute = line.slice(tabLength).split(' = ')[0];
+				parsedContent[className].properties[attribute] = realLine;
+			}
+		}
+	}
+	// console.log(parsedContent);
+	return parsedContent;
+}
+
+
+function findPositionWhereObjectIsAssigned(object: string, cursorLine: number) {
+	const activeEditor = vscode.window.activeTextEditor;
+	if (activeEditor) {
+		for (let i = cursorLine; i > 0; i--) {
+			let textLine = activeEditor.document.lineAt(i).text;
+			if (textLine.startsWith(object + ' = ')) {
+				console.log(`object : ${object} was assign at line ${i}: ${textLine}`);
+				return {
+					line: i,
+					text: textLine
+				};
+			}
+			if (textLine.startsWith('def')) {break;}
+		}
+	}
 	return null;
 }
 
-function findObjectClass() {
+
+function getClassAndProperty() {
 	let cursorInfo = getCurrentPositionAndLineContent();
 	if (cursorInfo !== null) {
-		let object = detectObjectInLine(cursorInfo.column, cursorInfo.text);
-		return object;
+		let objectInfo = getObjectAndItPropertyInCurrentLine(cursorInfo.column, cursorInfo.text);
+		if (objectInfo.objectName !== null && objectInfo.property !== null) {
+			let positionInfo = findPositionWhereObjectIsAssigned(objectInfo.objectName, cursorInfo.line);
+			if (positionInfo !== null) {
+				let objectClass = positionInfo.text.split(' = ')[1].split('.')[0];
+				console.log(`getClassAndProperty: ${objectClass}`);
+				return {
+					className: objectClass,
+					classProperty: objectInfo.property
+				};
+			}
+		}
 	}
+	console.log(`getClassAndProperty: null`);
+	return {
+		className: null,
+		classProperty: null
+	};;
 }
 
+
+function getAllPythonFileInWorkspace() {
+	var fileProcessCount = 0;
+	// let includePattern = '**/*.py';
+	// let excludePattern = '**/.venv/**';
+
+	if (vscode.workspace.workspaceFolders !== undefined) {
+		let includePattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0].uri, `{**/models.py,**/models/*.py}`);
+		let excludePattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0].uri, `{**/__init__.py,**/.venv/*}`);
+
+		vscode.workspace.findFiles(includePattern, excludePattern).then(files => {
+			console.log(`Total files to parse: ${files.length}`);
+			fileProcessCount = files.length;
+			let filePaths: string[] = [];
+			files.forEach(file => { filePaths.push(file.fsPath); });
+			console.log(filePaths);
+			return filePaths;
+		});
+	}
+	return [];
+}
+
+
+function doJumpToDefinition() {
+	let classInfo = getClassAndProperty();
+	if (classInfo.className !== null && classInfo.classProperty !== null) {
+		
+		let pythonFiles = getAllPythonFileInWorkspace();
+		pythonFiles.forEach(function(fileName){
+			console.log(fileName);
+			let tabLength = 4;
+			let parsedContent = parsePythonFile(fileName, tabLength);
+			
+			for (let key in parsedContent) {
+				if (key === classInfo.className) {
+					console.log(parsedContent[key]);
+					for (let k in parsedContent[key].properties) {
+						if (k === classInfo.classProperty) {
+							let line = parsedContent[key].properties[k];
+							openFileAtLine(fileName, line);
+							return;
+						}
+					}
+				}
+			}
+		});
+	}
+	return;
+}
+
+
+function getAllPythonFileInWorkspaceAndJumpToDefinition() {
+	var fileProcessCount = 0;
+	// let includePattern = '**/*.py';
+	// let excludePattern = '**/.venv/**';
+	let classInfo = getClassAndProperty();
+	if (vscode.workspace.workspaceFolders !== undefined && classInfo.className !== null && classInfo.classProperty !== null) {
+		let includePattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0].uri, `{**/models.py,**/models/*.py}`);
+		let excludePattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0].uri, `{**/__init__.py,**/.venv/*}`);
+
+		vscode.workspace.findFiles(includePattern, excludePattern).then(files => {
+			console.log(`Total files to parse: ${files.length}`);
+			fileProcessCount = files.length;
+			files.forEach(file => { 
+				let tabLength = 4;
+				let parsedContent = parsePythonFile(file.fsPath, tabLength);
+			
+				for (let key in parsedContent) {
+					if (key === classInfo.className) {
+						for (let k in parsedContent[key].properties) {
+							if (k === classInfo.classProperty) {
+								let line = parsedContent[key].properties[k];
+								openFileAtLine(file.fsPath, line);
+								return;
+							}
+						}
+					}
+				}
+			});
+			console.log('DONE');
+			return ;
+		});
+	}
+	return;
+}
 
 class GoDefinitionProvider implements vscode.DefinitionProvider {
 	// https://code.visualstudio.com/api/language-extensions/programmatic-language-features#show-definitions-of-a-symbol
@@ -160,6 +332,8 @@ function doRegisterHoverProvider() {
 	});
 }
 
+
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -179,6 +353,19 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from django-complete-navigate!');
 	});
 
+	// let disposable1 = vscode.commands.registerCommand('extension.removeConsoleLogs', async () => {
+	// 	// The code you place here will be executed every time your command is executed
+	// 	const files = await vscode.workspace.findFiles('**.*.*', '**/node_modules/**');
+
+	// 	vscode.window.showInformationMessage('number of files',files.length.toString());
+	// 	files.forEach(file => {
+	// 		vscode.window.showInformationMessage('Hello VS Code!!!!!');
+
+	// 	});
+	// 	// Display a message box to the user
+
+	// });
+
 	let jumpToDefinition = vscode.commands.registerCommand("django-complete-navigate.model-objects-jump-to-definition", () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
@@ -188,7 +375,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// openFileAndInsertText("/home/xuananh/Dropbox/Temp/temp.sh", "aaaaa");
 		// openFileAtLine("/home/xuananh/Dropbox/Temp/temp.sh", 5);
 		// getCurrentPositionAndLineContent();
-		findObjectClass();
+		// getClassAndProperty();
+		// getClassAndPropertyInfo('');
+		// getAllPythonFileInWorkspace();
+		// parsePythonFile('/home/xuananh/Dropbox/Temp/temp.py', 4);
+		// doJumpToDefinition();
+		getAllPythonFileInWorkspaceAndJumpToDefinition();
 	});
 
 	context.subscriptions.push(disposable);
@@ -218,6 +410,7 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 		'.' // NOTE: trigger auto complete by '.' character
 	  ));
+
 }
 
 // this method is called when your extension is deactivated
