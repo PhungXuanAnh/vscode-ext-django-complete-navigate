@@ -145,6 +145,21 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
 }
 
 
+function doRegisterHoverProvider() {
+	// https://github.com/ShPelles/vscode-hover-demo
+	const disposable = vscode.languages.registerHoverProvider(['python', 'markdown', 'plaintext'], {
+		provideHover(document, position, token) {
+			const range = document.getWordRangeAtPosition(position);
+			const text = document.getText(range);
+			const count = document.getText().match(new RegExp(text, 'g'))?.length;
+			return {
+				contents: [`xuananh's hover: **${text}** - ${count} times in this document`],
+				range
+			};
+		}
+	});
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -155,6 +170,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.languages.registerDefinitionProvider(
         {language: "python"}, new GoDefinitionProvider() ));
+
+	doRegisterHoverProvider();
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
