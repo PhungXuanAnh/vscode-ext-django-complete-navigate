@@ -36,7 +36,7 @@ function openFileAtLine(filePath: string, lineNumber: number) {
 }
 
 
-function getCurrentLineContent() {
+function getCurrentPositionAndLineContent() {
 	// https://stackoverflow.com/a/49889203/7639845
 	// https://gist.github.com/moshfeu/6f61dfb8e1f5e20320ba359501e2c96c/revisions
 	const activeEditor = vscode.window.activeTextEditor;
@@ -45,13 +45,53 @@ function getCurrentLineContent() {
 		const cursorLine = activeEditor.selection.active.line;
 		const cursorColumn = activeEditor.selection.active.character;
 		var yourMessage = `Current cursor [line,column]=[${cursorLine + 1},${cursorColumn}] have content: ${text}`;
-		vscode.window.showInformationMessage(yourMessage);
+		console.log('getCurrentPositionAndLineContent: ' + yourMessage);
+		return {
+			line: cursorLine,
+			column: cursorColumn,
+			text: text
+		};
 	}
+	console.log("getCurrentPositionAndLineContent: Cannot get cursor");
+	return null;
 }
 
 
+function findAllIndexOfDotInString(str: string) {
+	var indices = [];
+	for(var i=0; i<str.length;i++) {
+		if (str[i] === ".") {
+			indices.push(i);
+		}
+	}
+	return indices;
+}
+
+
+function detectObjectInLine(cursorColumn: number, str: string) {
+	let splitStr = str.split(".");
+	let tmpStr = splitStr[0];
+	var object = null;
+
+	for(var i=0; i<splitStr.length; i++) {
+		if (tmpStr.length > cursorColumn - 1) {
+			console.log("detectObjectInLine: " + object);
+			return object;
+		}
+		tmpStr += '.';
+		tmpStr += splitStr[i+1];
+		object = splitStr[i];
+	}
+	console.log("detectObjectInLine: Cannot detect object");
+	return null;
+}
+
 function findObjectClass() {
-	
+	let cursorInfo = getCurrentPositionAndLineContent();
+	if (cursorInfo !== null) {
+		let object = detectObjectInLine(cursorInfo.column, cursorInfo.text);
+		return object;
+	}
 }
 
 
@@ -80,7 +120,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// openFileAndInsertText("/home/xuananh/Dropbox/Temp/temp.sh", "aaaaa");
 		// openFileAtLine("/home/xuananh/Dropbox/Temp/temp.sh", 5);
-		getCurrentLineContent();
+		// getCurrentPositionAndLineContent();
+		findObjectClass();
 	});
 
 	context.subscriptions.push(disposable);
