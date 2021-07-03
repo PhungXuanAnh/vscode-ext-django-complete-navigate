@@ -2,6 +2,39 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+
+function openFileAndInsertText(filePath: string, insertString: string) {
+	// reference: https://stackoverflow.com/a/39183552/7639845
+	var setting: vscode.Uri = vscode.Uri.parse(filePath);
+	vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
+		vscode.window.showTextDocument(a, 1, false).then(e => {
+			e.edit(edit => {
+				edit.insert(new vscode.Position(0, 0), insertString);
+			});
+		});
+	}, (error: any) => {
+		console.error(error);
+		debugger;
+	});
+}
+
+
+function openFileAtLine(filePath: string, lineNumber: number) {
+	// reference: https://stackoverflow.com/a/39183552/7639845
+	var setting: vscode.Uri = vscode.Uri.parse(filePath);
+	vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
+		vscode.window.showTextDocument(a, 1, false).then(editor => {
+			// https://github.com/Microsoft/vscode/issues/6695#issuecomment-221146568
+			let range = editor.document.lineAt(lineNumber-1).range;
+			editor.selection =  new vscode.Selection(range.start, range.end);
+			editor.revealRange(range);
+		});
+	}, (error: any) => {
+		console.error(error);
+		debugger;
+	});
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -23,6 +56,9 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		vscode.window.showInformationMessage('aaaaaaaaaaaaa');
+
+		// openFileAndInsertText("/home/xuananh/Dropbox/Temp/temp.sh", "aaaaa");
+		openFileAtLine("/home/xuananh/Dropbox/Temp/temp.sh", 5);
 	});
 
 	context.subscriptions.push(disposable);
