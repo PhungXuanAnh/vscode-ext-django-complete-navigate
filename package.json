@@ -24,7 +24,15 @@
 				"command": "django-complete-navigate.model-objects-jump-to-definition",
 				"title": "Django-complete-navigate: Model object: Jump to Definition"
 			}
-		]
+		],
+		"keybindings": [
+			{
+			  "command": "django-complete-navigate.model-objects-jump-to-definition",
+			  "key": "ctrl+f1",
+			  "mac": "cmd+f1",
+			  "when": "editorTextFocus"
+			}
+		  ]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
