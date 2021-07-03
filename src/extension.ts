@@ -35,6 +35,26 @@ function openFileAtLine(filePath: string, lineNumber: number) {
 	});
 }
 
+
+function getCurrentLineContent() {
+	// https://stackoverflow.com/a/49889203/7639845
+	// https://gist.github.com/moshfeu/6f61dfb8e1f5e20320ba359501e2c96c/revisions
+	const activeEditor = vscode.window.activeTextEditor;
+	if (activeEditor) {
+		const {text} = activeEditor.document.lineAt(activeEditor.selection.active.line);
+		const cursorLine = activeEditor.selection.active.line;
+		const cursorColumn = activeEditor.selection.active.character;
+		var yourMessage = `Current cursor [line,column]=[${cursorLine + 1},${cursorColumn}] have content: ${text}`;
+		vscode.window.showInformationMessage(yourMessage);
+	}
+}
+
+
+function findObjectClass() {
+	
+}
+
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -55,10 +75,12 @@ export function activate(context: vscode.ExtensionContext) {
 	let jumpToDefinition = vscode.commands.registerCommand("django-complete-navigate.model-objects-jump-to-definition", () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
+
 		vscode.window.showInformationMessage('aaaaaaaaaaaaa');
 
 		// openFileAndInsertText("/home/xuananh/Dropbox/Temp/temp.sh", "aaaaa");
-		openFileAtLine("/home/xuananh/Dropbox/Temp/temp.sh", 5);
+		// openFileAtLine("/home/xuananh/Dropbox/Temp/temp.sh", 5);
+		getCurrentLineContent();
 	});
 
 	context.subscriptions.push(disposable);
