@@ -168,9 +168,6 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "django-complete-navigate" is now active!');
 
-	context.subscriptions.push(vscode.languages.registerDefinitionProvider(
-        {language: "python"}, new GoDefinitionProvider() ));
-
 	doRegisterHoverProvider();
 
 	// The command has been defined in the package.json file
@@ -196,6 +193,31 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 	context.subscriptions.push(jumpToDefinition);
+	context.subscriptions.push(vscode.languages.registerDefinitionProvider(
+        {language: "python"}, new GoDefinitionProvider() ));
+
+	context.subscriptions.push(vscode.languages.registerCompletionItemProvider (
+		// https://stackoverflow.com/a/64593598/7639845
+		// { language: 'json', scheme: 'file' },
+		'python',
+		{
+		  // eslint-disable-next-line no-unused-vars
+		  provideCompletionItems(document, position, token, context) {
+			let myItem = (text: string) => {
+			  let item = new vscode.CompletionItem(text, vscode.CompletionItemKind.Text);
+			  item.range = new vscode.Range(position, position);
+			  item.detail = 'xuananh suggest';
+			  return item;
+			};
+			return [
+			  myItem('howdy1'),
+			  myItem('howdy2'),
+			  myItem('howdy3'),
+			];
+		  }
+		},
+		'.' // NOTE: trigger auto complete by '.' character
+	  ));
 }
 
 // this method is called when your extension is deactivated
