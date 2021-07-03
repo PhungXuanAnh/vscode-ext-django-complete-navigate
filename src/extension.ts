@@ -95,6 +95,56 @@ function findObjectClass() {
 }
 
 
+class GoDefinitionProvider implements vscode.DefinitionProvider {
+	// https://code.visualstudio.com/api/language-extensions/programmatic-language-features#show-definitions-of-a-symbol
+
+    public provideDefinition(
+        document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken):
+        Thenable<vscode.Definition>{
+			console.log('------------------------ 1 this is my provider definition');
+
+			// https://stackoverflow.com/a/46054953/7639845
+
+            // return new Promise((resolve, reject) =>{
+            //     let definitions:vscode.Definition = [];         
+            //     for (let i = 0; i < document.lineCount; i++) {
+            //         let eachLine = document.lineAt(i).text.toLowerCase().trim();
+            //         if (eachLine.startsWith("cursor")) {                    
+            //             definitions.push({
+            //                 uri: document.uri,
+            //                 range: document.lineAt(i).range
+            //             });                     
+            //         }                   
+            //     } 
+
+            //     resolve(definitions);
+            // });
+
+			// https://stackoverflow.com/a/58972720/7639845
+
+			return new Promise((resolve, reject) =>{
+				const range = document.getWordRangeAtPosition(position);
+				const selectedWord = document.getText(range);
+				console.log('----------------------- 2 ' + selectedWord);
+				let definitions:vscode.Definition = [];         
+				for (let i = 0; i < document.lineCount; i++) {
+					let eachLine = document.lineAt(i).text.toLowerCase().trim();
+					if (eachLine.startsWith("def")) { 
+						if (eachLine.includes(selectedWord)) {//only selectedWord                  
+							definitions.push({
+								uri: document.uri,
+								range: document.lineAt(i).range
+							}); 
+						}
+					}                   
+				} 
+				resolve(definitions);
+			});
+
+    }
+}
+
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -102,6 +152,9 @@ export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "django-complete-navigate" is now active!');
+
+	context.subscriptions.push(vscode.languages.registerDefinitionProvider(
+        {language: "python"}, new GoDefinitionProvider() ));
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand

@@ -11,9 +11,13 @@
 	],
 	"activationEvents": [
 		"onCommand:django-complete-navigate.helloWorld",
-		"onCommand:django-complete-navigate.model-objects-jump-to-definition"
+		"onCommand:django-complete-navigate.model-objects-jump-to-definition",
+		"onLanguage:python"
 	],
 	"main": "./out/extension.js",
+	"capabilities" : {
+        "definitionProvider" : "true"
+    },
 	"contributes": {
 		"commands": [
 			{
@@ -32,7 +36,11 @@
 			  "mac": "cmd+f1",
 			  "when": "editorTextFocus"
 			}
-		  ]
+		],
+		"languages": [{
+			"id": "python",
+			"extensions": [".py"]
+		}]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
