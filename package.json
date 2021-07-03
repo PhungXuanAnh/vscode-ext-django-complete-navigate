@@ -10,14 +10,19 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:django-complete-navigate.helloWorld"
+		"onCommand:django-complete-navigate.helloWorld",
+		"onCommand:django-complete-navigate.model-objects-jump-to-definition"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "django-complete-navigate.helloWorld",
-				"title": "Hello World"
+				"title": "Django-complete-navigate: Hello World"
+			},
+			{
+				"command": "django-complete-navigate.model-objects-jump-to-definition",
+				"title": "Django-complete-navigate: Model object: Jump to Definition"
 			}
 		]
 	},

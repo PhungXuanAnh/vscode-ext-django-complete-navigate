@@ -19,7 +19,14 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from django-complete-navigate!');
 	});
 
+	let jumpToDefinition = vscode.commands.registerCommand("django-complete-navigate.model-objects-jump-to-definition", () => {
+		// The code you place here will be executed every time your command is executed
+		// Display a message box to the user
+		vscode.window.showInformationMessage('aaaaaaaaaaaaa');
+	});
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(jumpToDefinition);
 }
 
 // this method is called when your extension is deactivated
