@@ -166,7 +166,7 @@ function getClassAndProperty() {
 			let positionInfo = findPositionWhereObjectIsAssigned(objectInfo.objectName, cursorInfo.line);
 			if (positionInfo !== null) {
 				let objectClass = positionInfo.text.split(' = ')[1].split('.')[0];
-				console.log(`getClassAndProperty: ${objectClass}`);
+				console.log(`getClassAndProperty: object'class: ${objectClass}`);
 				return {
 					className: objectClass,
 					classProperty: objectInfo.property
@@ -174,7 +174,7 @@ function getClassAndProperty() {
 			}
 		}
 	}
-	console.log(`getClassAndProperty: null`);
+	console.log(`getClassAndProperty: object'class: null`);
 	return {
 		className: null,
 		classProperty: null
@@ -333,6 +333,39 @@ function doRegisterHoverProvider() {
 }
 
 
+function runPythonCode() {
+	const pythonShell = require('python-shell').PythonShell;
+	console.log('Running python code ------------------------');
+	pythonShell.run('/home/xuananh/repo/vscode-ext-django-complete-navigate/src/my_script.py', null, function (err: string) {
+		if (err) {
+			console.error(err);
+		}
+		console.log('finished');
+	});
+}
+
+function runPythonCodeWithArgsAndOption() {
+	// https://stackoverflow.com/a/47866721/7639845
+	const pythonShell = require('python-shell').PythonShell;
+
+	var options = {
+		mode: 'text',
+		pythonPath: '/home/xuananh/repo/python-note/.venv/bin/python',
+		pythonOptions: ['-u'],
+		scriptPath: '/home/xuananh/repo/vscode-ext-django-complete-navigate/src',
+		args: ['value1', 'value2', 'value3']
+	};
+
+	pythonShell.run('my_script1.py', options, function (err: string, results: string[]) {
+		if (err) {
+			// throw err;
+			console.error(err);
+		}
+		// Results is an array consisting of messages collected during execution
+		console.log('results: ', results);
+	});
+}
+
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -380,7 +413,9 @@ export function activate(context: vscode.ExtensionContext) {
 		// getAllPythonFileInWorkspace();
 		// parsePythonFile('/home/xuananh/Dropbox/Temp/temp.py', 4);
 		// doJumpToDefinition();
-		getAllPythonFileInWorkspaceAndJumpToDefinition();
+		// getAllPythonFileInWorkspaceAndJumpToDefinition();
+		// runPythonCode();
+		runPythonCodeWithArgsAndOption();
 	});
 
 	context.subscriptions.push(disposable);
