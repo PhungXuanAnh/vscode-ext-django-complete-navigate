@@ -405,6 +405,14 @@ function runPythonCodeToGetFileAndDefinePosition() {
 		}
 		// Results is an array consisting of messages collected during execution
 		console.log('results from navigate.py: ', results);
+		console.log(results);
+		console.log(typeof results);
+		console.log(results[0]);
+		for (const property in results) {
+			// console.log(`${property}: ${results[property]}`);
+			let fileInfo = results[property].split(":");
+			openFileAtLine(fileInfo[0], Number(fileInfo[1]));
+		  }
 	});
 }
 
