@@ -2,6 +2,7 @@
 	"name": "django-complete-navigate",
 	"displayName": "django-complete-navigate",
 	"description": "",
+	"publisher": "alexander-xuananh",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.57.0"

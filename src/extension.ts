@@ -405,6 +405,7 @@ function runPythonCodeToGetFileAndDefinePosition() {
 		}
 		// Results is an array consisting of messages collected during execution
 		console.log('results from navigate.py: ', results);
+		console.log('bbbbbbbbbbbbbbb');
 		console.log(results);
 		console.log(typeof results);
 		console.log(results[0]);
@@ -413,6 +414,8 @@ function runPythonCodeToGetFileAndDefinePosition() {
 			let fileInfo = results[property].split(":");
 			openFileAtLine(fileInfo[0], Number(fileInfo[1]));
 		  }
+
+		// test method : return instance.calculate_total_amount()
 	});
 }
 

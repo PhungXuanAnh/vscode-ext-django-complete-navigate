@@ -1,8 +1,5 @@
 import ast
-import fnmatch
-import json
 import os
-import glob
 import sys
 import astpretty
 
