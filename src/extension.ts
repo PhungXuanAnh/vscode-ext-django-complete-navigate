@@ -62,16 +62,19 @@ function getObjectAndItPropertyInCurrentLine(cursorColumn: number, str: string) 
 	let tmpStr = splitStr[0];
 	let object = null;
 	let property = null;
+	let propertyType = 'attributes';
 
 	for(var i=0; i<splitStr.length; i++) {
 		if (tmpStr.length > cursorColumn - 1) {
 			console.log(`getObjectAndItPropertyInCurrentLine: object.property: ${object}.${property}`);
 			if (property !== null && property.includes('(')) {	// remove () in object.property()
 				property = property.split('(')[0];
+				propertyType = 'method';
 			}
 			return {
 				objectName: object,
-				property: property
+				property: property,
+				propertyType: propertyType
 			};;
 		}
 		tmpStr += '.';
@@ -366,6 +369,44 @@ function runPythonCodeWithArgsAndOption() {
 	});
 }
 
+function getMethodOrAttributeNameFromCursorPosition() {
+	let cursorInfo = getCurrentPositionAndLineContent();
+	if (cursorInfo !== null) {
+		let objectInfo = getObjectAndItPropertyInCurrentLine(cursorInfo.column, cursorInfo.text);
+		if (objectInfo.objectName !== null && objectInfo.property !== null) {
+			return objectInfo;
+		}
+	}
+}
+
+
+function runPythonCodeToGetFileAndDefinePosition() {
+	if (vscode.workspace.workspaceFolders === undefined) {
+		vscode.window.showInformationMessage('Cannot get workspace folder');
+		return;
+	}
+
+	let objectInfo = getMethodOrAttributeNameFromCursorPosition();
+
+	const pythonShell = require('python-shell').PythonShell;
+
+	var options = {
+		mode: 'text',
+		pythonPath: '/home/xuananh/repo/vscode-ext-django-complete-navigate/.venv/bin/python',
+		pythonOptions: ['-u'],
+		scriptPath: '/home/xuananh/repo/vscode-ext-django-complete-navigate/python_code',
+		args: [vscode.workspace.workspaceFolders[0].uri, objectInfo?.property, objectInfo?.propertyType]
+	};
+
+	pythonShell.run('navigation.py', options, function (err: string, results: string[]) {
+		if (err) {
+			// throw err;
+			console.error(err);
+		}
+		// Results is an array consisting of messages collected during execution
+		console.log('results from navigate.py: ', results);
+	});
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -415,7 +456,8 @@ export function activate(context: vscode.ExtensionContext) {
 		// doJumpToDefinition();
 		// getAllPythonFileInWorkspaceAndJumpToDefinition();
 		// runPythonCode();
-		runPythonCodeWithArgsAndOption();
+		// runPythonCodeWithArgsAndOption();
+		runPythonCodeToGetFileAndDefinePosition();
 	});
 
 	context.subscriptions.push(disposable);
