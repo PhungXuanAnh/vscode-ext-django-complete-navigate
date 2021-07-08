@@ -295,24 +295,29 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
             //     resolve(definitions);
             // });
 
+			// --------------------------------------------------------
 			// https://stackoverflow.com/a/58972720/7639845
 
 			return new Promise((resolve, reject) =>{
 				const range = document.getWordRangeAtPosition(position);
 				const selectedWord = document.getText(range);
 				console.log('----------------------- 2 ' + selectedWord);
-				let definitions:vscode.Definition = [];         
-				for (let i = 0; i < document.lineCount; i++) {
-					let eachLine = document.lineAt(i).text.toLowerCase().trim();
-					if (eachLine.startsWith("def")) { 
-						if (eachLine.includes(selectedWord)) {//only selectedWord                  
-							definitions.push({
-								uri: document.uri,
-								range: document.lineAt(i).range
-							}); 
-						}
-					}                   
-				} 
+				let definitions:vscode.Definition = [];
+				// NOTE: temporary comment below codes because, by default there is another running DefinitionProvider
+				// if install this extension, when ctrl + click to a word, 2 DefinitionProvider will return 2 same results
+				// And you need to choose one instead jump right away after ctrl+click
+
+				// for (let i = 0; i < document.lineCount; i++) {
+				// 	let eachLine = document.lineAt(i).text.toLowerCase().trim();
+				// 	if (eachLine.startsWith("def")) { 
+				// 		if (eachLine.includes(selectedWord)) {	//only selectedWord                  
+				// 			definitions.push({
+				// 				uri: document.uri,
+				// 				range: document.lineAt(i).range
+				// 			}); 
+				// 		}
+				// 	}                   
+				// } 
 				resolve(definitions);
 			});
 
