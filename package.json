@@ -16,6 +16,7 @@
 	"activationEvents": [
 		"onCommand:django-complete-navigate.helloWorld",
 		"onCommand:django-complete-navigate.model-objects-jump-to-definition",
+		"onCommand:django-complete-navigate.registerTerminalLinkProvider",
 		"onLanguage:python"
 	],
 	"main": "./out/extension.js",
@@ -31,6 +32,10 @@
 			{
 				"command": "django-complete-navigate.model-objects-jump-to-definition",
 				"title": "Django-complete-navigate: Model object: Jump to Definition"
+			},
+			{
+				"command": "django-complete-navigate.registerTerminalLinkProvider",
+				"title": "Django-complete-navigate: Register terminal link provider"
 			}
 		],
 		"keybindings": [

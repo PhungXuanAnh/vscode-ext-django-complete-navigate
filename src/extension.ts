@@ -424,6 +424,63 @@ function runPythonCodeToGetFileAndDefinePosition() {
 	});
 }
 
+
+function getFilePathAndLineFromString(str: string) {
+	// File "/code/user_portal/gene/models/affiliator.py", line 677, in organization_lead_definition_type
+	// /home/xuananh/repo/genetica-user-portal/user_portal/gene/models/affiliator.py
+	let splittedString = str.split('"');
+	let filePath = splittedString[1];
+	let lineNumber = splittedString[2].split(' ')[2].slice(0, -1);
+	if (filePath.includes('/code/user_portal')) {
+		filePath = filePath.replace('/code/user_portal', '/home/xuananh/repo/genetica-user-portal/user_portal');
+		console.log(filePath, lineNumber);
+		return {
+			filePath,
+			lineNumber
+		};
+	}
+	return null;
+}
+
+function doRegisterTerminalLinkProvider() {
+	// https://stackoverflow.com/a/64671139/7639845
+	vscode.window.registerTerminalLinkProvider({
+		provideTerminalLinks: (context, token) => {
+			// Detect the first instance of the word "test" if it exists and linkify it
+			console.log(context.line as string);
+
+			// const startIndex = (context.line as string).indexOf("link");
+			const startIndex = (context.line as string).indexOf("File");
+			console.log(startIndex);
+
+			if (startIndex === -1) {
+				return [];
+			}
+			return [
+				{
+					startIndex,
+					length: "test".length,
+					tooltip: "Show a notification",
+					// You can return data in this object to access inside handleTerminalLink
+					// data: "Example data",
+					data: context.line as string
+				},
+			];
+		},
+		handleTerminalLink: (link: any) => {
+			// console.log('aaaaaaaaaaaaaaaaaa');
+			// console.log(link);
+			// vscode.window.showInformationMessage(
+			// 	`Link activated (data = ${link.data})`
+			// );
+			let results = getFilePathAndLineFromString(link.data);
+			if (results !== null) {
+				openFileAtLine(results.filePath, Number(results.lineNumber));
+			}
+		},
+	});
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -433,6 +490,7 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "django-complete-navigate" is now active!');
 
 	doRegisterHoverProvider();
+	doRegisterTerminalLinkProvider();
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
@@ -504,7 +562,35 @@ export function activate(context: vscode.ExtensionContext) {
 		'.' // NOTE: trigger auto complete by '.' character
 	  ));
 
+	// context.subscriptions.push(vscode.commands.registerCommand('django-complete-navigate.registerTerminalLinkProvider', () => {
+	// 	vscode.window.registerTerminalLinkProvider({
+	// 		provideTerminalLinks: (context: any, token: vscode.CancellationToken) => {
+	// 			// Detect the first instance of the word "link" if it exists and linkify it
+	// 			console.log('aaaaaaaaaaaaaaaaaaaaaaaaaa 1 neu khong co cau  tra loi thi tao 1 cai command moi lam giong nhu command cua django y, khong dc nua thi chinh luon cai method nay cung dc');
+	// 			const startIndex = (context.line as string).indexOf('link');
+	// 			// if (startIndex === -1) {
+	// 			// 	return [];
+	// 			// }
+	// 			// console.log('aaaaaaaaaaaaaaaaaaaaaaaaaa 1');
+	// 			return [
+	// 				{
+	// 					startIndex,
+	// 					length: 'link'.length,
+	// 					tooltip: 'Show a notification',
+	// 					// You can return data in this object to access inside handleTerminalLink
+	// 					data: 'Example data'
+	// 				}
+	// 			];
+	// 		},
+	// 		handleTerminalLink: (link: any) => {
+	// 			console.log('aaaaaaaaaaaaaaaaaaaaaaaaaa 2');
+	// 			vscode.window.showInformationMessage(`Link activated (data = ${link.data})`);
+	// 			return link;
+	// 		}
+	// 	});
+	// }));
 }
+
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
