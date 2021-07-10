@@ -17,7 +17,8 @@
 		"onCommand:django-complete-navigate.helloWorld",
 		"onCommand:django-complete-navigate.model-objects-jump-to-definition",
 		"onCommand:django-complete-navigate.registerTerminalLinkProvider",
-		"onLanguage:python"
+		"onLanguage:python",
+		"onStartupFinished"
 	],
 	"main": "./out/extension.js",
 	"capabilities": {
