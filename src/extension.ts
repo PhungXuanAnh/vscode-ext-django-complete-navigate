@@ -427,12 +427,12 @@ function runPythonCodeToGetFileAndDefinePosition() {
 
 function getFilePathAndLineFromString(str: string) {
 	// File "/code/user_portal/gene/models/affiliator.py", line 677, in organization_lead_definition_type
-	// /home/xuananh/repo/genetica-user-portal/user_portal/gene/models/affiliator.py
+	// /home/xuananh/repo/user-portal/user_portal/gene/models/affiliator.py
 	let splittedString = str.split('"');
 	let filePath = splittedString[1];
 	let lineNumber = splittedString[2].split(' ')[2].slice(0, -1);
 	if (filePath.includes('/code/user_portal')) {
-		filePath = filePath.replace('/code/user_portal', '/home/xuananh/repo/genetica-user-portal/user_portal');
+		filePath = filePath.replace('/code/user_portal', '/home/xuananh/repo/user-portal/user_portal');
 		console.log(filePath, lineNumber);
 		return {
 			filePath,

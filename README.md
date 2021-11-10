@@ -13,6 +13,12 @@ npm install
 npm install -g vsce
 vsce --version
 # 2.2.0
+
+venv-create
+source_python_venv
+python --version
+# 3.9.0
+pip install -r requirements.txt
 ```
 
 # 2. build and install

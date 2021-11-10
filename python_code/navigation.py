@@ -147,25 +147,28 @@ def find_file_name_and_position(workspace_dir, method=None, attribute=None, clas
 
 def test():
     with open(
-        "/home/xuananh/repo/genetica-user-portal/user_portal/gene/models/affiliator.py", "r"
+        "/home/xuananh/repo/user-portal/user_portal/gene/models/affiliator.py", "r"
     ) as source:
         tree = ast.parse(source.read())
         # astpretty.pprint(tree, show_offsets=True)
         ast_visit1(tree)
+    sys.exit()
 
 
 if __name__ == "__main__":
+    # test()
+
     file_name = ""
     cursor_row = 1
     # get_current_attr_or_method_and_class_name(file_name, cursor_row)
-    workspace_dir = "/home/xuananh/repo/genetica-user-portal"
+    workspace_dir = "/home/xuananh/repo/user-portal"
     # find_file_name_and_position(workspace_dir, attribute="cancel_reason_type")
 
     # TODO: voi method get_commission_rate se tra ve 1 danh sach file nhu sau:
-    # /home/xuananh/repo/genetica-user-portal/user_portal/gene/models/affiliator.py:132
-    # /home/xuananh/repo/genetica-user-portal/user_portal/gene/models/affiliator.py:627
-    # /home/xuananh/repo/genetica-user-portal/user_portal/gene/models/affiliator.py:1438
-    # /home/xuananh/repo/genetica-user-portal/user_portal/gene/models/advocate_organization.py:159
+    # /home/xuananh/repo/user-portal/user_portal/gene/models/affiliator.py:132
+    # /home/xuananh/repo/user-portal/user_portal/gene/models/affiliator.py:627
+    # /home/xuananh/repo/user-portal/user_portal/gene/models/affiliator.py:1438
+    # /home/xuananh/repo/user-portal/user_portal/gene/models/advocate_organization.py:159
     # de cai tien thi ta se tra ve ca class name va file name cua cai method do
     # sau do tim cach show len 1 cai pop up de nguoi dung chon se nhay den file nao kieu ntn
     #           affiliator.py:1438:AffiliatorOrder.get_commission_rate()
@@ -183,4 +186,3 @@ if __name__ == "__main__":
         # print('------------ attribute')
         find_file_name_and_position(workspace_dir, attribute=property)
 
-    # test()
